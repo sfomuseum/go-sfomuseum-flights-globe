@@ -16,4 +16,4 @@ Which would produce:
 ## See also:
 
 * https://github.com/mmcloughlin/globe
-* https://github.com/sfomuseum-data/?utf8=%E2%9C%93&q=sfomuseum-data-flights
+* https://github.com/sfomuseum-data/?q=sfomuseum-data-flights
