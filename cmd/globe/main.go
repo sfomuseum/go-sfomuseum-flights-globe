@@ -5,11 +5,11 @@ import (
 	"flag"
 	"github.com/mmcloughlin/globe"
 	_ "github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/feature"	
+	"github.com/whosonfirst/go-whosonfirst-geojson-v2/feature"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
 	"github.com/whosonfirst/go-whosonfirst-index"
 	"image/color"
-	"io"	
+	"io"
 	"log"
 	"sync"
 )
@@ -49,7 +49,7 @@ func main() {
 
 		mu.Lock()
 		defer mu.Unlock()
-		
+
 		polys, err := f.Polygons()
 
 		if err != nil {
@@ -57,7 +57,7 @@ func main() {
 		}
 
 		for _, poly := range polys {
-			
+
 			ext := poly.ExteriorRing()
 			coords := ext.Vertices()
 
@@ -69,14 +69,14 @@ func main() {
 			min_y := coords[0].Y
 			max_x := coords[1].X
 			max_y := coords[1].Y
-			
+
 			g.DrawLine(
 				min_y, min_x,
 				max_y, max_x,
 				globe.Color(color.NRGBA{255, 0, 0, 255}),
 			)
 		}
-		
+
 		return nil
 	}
 

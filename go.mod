@@ -5,6 +5,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/mmcloughlin/globe v0.0.0-20180909000000-4175779440e5a9522497d0415909d0fb5b83fda9
+	github.com/skelterjohn/geom v0.0.0-20180103000000-96f3e8a219c5f4276b0dda3568d80c4e02a50116
 	github.com/tidwall/gjson v1.2.1
 	github.com/tidwall/pinhole v0.0.0-20170713004337-171cd602c428 // indirect
 	github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.10.2
