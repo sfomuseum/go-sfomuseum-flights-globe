@@ -1,5 +1,10 @@
 package main
 
+// this is work in progress - the point here is not so much to fetch data with
+// go-whosonfirst-index but to think about how/what data we need to get in order
+// to make a pretty map and how, for example the globe may not actually be the
+// best interface... (20190925/thisisaaronland)
+
 import (
 	"context"
 	"flag"
