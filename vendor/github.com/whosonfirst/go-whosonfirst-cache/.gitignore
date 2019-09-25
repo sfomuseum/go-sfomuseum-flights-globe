@@ -4,8 +4,8 @@ src
 !vendor/src
 bin
 !bin/.gitignore
-*.zip
+*.log
 *.json
-!data/*.json
-*.csv
-*.png
+.travis.yml
+*.db
+testdata/*.txt

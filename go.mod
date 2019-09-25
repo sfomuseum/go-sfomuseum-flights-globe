@@ -9,6 +9,8 @@ require (
 	github.com/tidwall/pinhole v0.0.0-20170713004337-171cd602c428 // indirect
 	github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.10.2
 	github.com/whosonfirst/go-whosonfirst-index v0.1.2
+	github.com/whosonfirst/go-whosonfirst-readwrite v0.1.0
+	github.com/whosonfirst/go-whosonfirst-uri v0.1.0
 	golang.org/x/image v0.0.0-20190523035834-f03afa92d3ff // indirect
 )
 
