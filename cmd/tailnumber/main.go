@@ -50,12 +50,19 @@ func LoadFeatureFromReader(rd reader.Reader, id int64) (geojson.Feature, error) 
 func main() {
 
 	mode := flag.String("mode", "repo", "")
-	tailnumber := flag.String("tailnumber", "", "")
+	key := flag.String("key", "", "")
+
+	// make this a multi-value flag
+
+	value := flag.String("value", "", "")
 
 	flag.Parse()
 
-	if *tailnumber == "" {
-		log.Fatal("Missing tail number")
+	switch *key {
+	case "tailnumber", "aircraft":
+		// pass
+	default:
+		log.Fatal("Invalid key")
 	}
 
 	fs_root := "/usr/local/data/sfomuseum-data-whosonfirst/data"
@@ -83,13 +90,32 @@ func main() {
 			return nil
 		}
 
-		tail_rsp := gjson.GetBytes(f.Bytes(), "properties.swim:tail_number")
+		// this logic will need to be updated once -value is a multi-value flag
 
-		if !tail_rsp.Exists() {
-			return nil
+		match := false
+
+		switch *key {
+		case "aircraft":
+
+			rsp := gjson.GetBytes(f.Bytes(), "properties.icao:aircraft")
+
+			if rsp.Exists() && rsp.String() == *value {
+				match = true
+			}
+
+		case "tailnumber":
+
+			tail_rsp := gjson.GetBytes(f.Bytes(), "properties.swim:tail_number")
+
+			if tail_rsp.Exists() && tail_rsp.String() == *value {
+				match = true
+			}
+
+		default:
+			// this should never happen
 		}
 
-		if tail_rsp.String() != *tailnumber {
+		if !match {
 			return nil
 		}
 
@@ -164,6 +190,8 @@ func main() {
 			return false
 		}
 
+		// TO DO: flag airports that are "visiting" null islan
+
 		centroid, err := whosonfirst.Centroid(feature)
 
 		if err != nil {
@@ -188,13 +216,13 @@ func main() {
 	}
 
 	/*
-	g.DrawRect(
-		min_y, min_x,
-		max_y, max_x,
-		globe.Color(color.NRGBA{255, 0, 0, 255}),
-	)
+		g.DrawRect(
+			min_y, min_x,
+			max_y, max_x,
+			globe.Color(color.NRGBA{255, 0, 0, 255}),
+		)
 	*/
-	
+
 	for _, c := range coords {
 		g.DrawLine(
 			sfo_coords.Y, sfo_coords.X,
@@ -204,9 +232,9 @@ func main() {
 	}
 
 	green := color.NRGBA{0x00, 0x64, 0x3c, 192}
-	
+
 	g.DrawDot(sfo_coords.Y, sfo_coords.X, 0.05, globe.Color(green))
-	
+
 	for _, c := range coords {
 		g.DrawDot(c.Y, c.X, 0.05, globe.Color(green))
 	}
