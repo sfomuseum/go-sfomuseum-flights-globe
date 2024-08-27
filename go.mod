@@ -22,5 +22,5 @@ require (
 	github.com/whosonfirst/go-whosonfirst-crawl v0.2.2 // indirect
 	github.com/whosonfirst/walk v0.0.2 // indirect
 	go.mongodb.org/mongo-driver v1.11.4 // indirect
-	golang.org/x/image v0.6.0 // indirect
+	golang.org/x/image v0.18.0 // indirect
 )
