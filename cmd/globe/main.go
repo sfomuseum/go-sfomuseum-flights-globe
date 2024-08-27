@@ -5,27 +5,32 @@ import (
 	"flag"
 	"github.com/mmcloughlin/globe"
 	_ "github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/feature"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
-	"github.com/whosonfirst/go-whosonfirst-index"
 	"image/color"
 	"io"
 	"log"
 	"sync"
+
+	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
+	"github.com/paulmach/orb"	
+	"github.com/paulmach/orb/geojson"
 )
 
 func main() {
 
+	var iterator_uri string
+	
 	size := flag.Int("size", 1024, "...")
 	out := flag.String("out", "globe.png", "...")
 
 	lat := flag.Float64("latitude", 37.622096, "...")
 	lon := flag.Float64("longitude", -122.384864, "...")
 
-	mode := flag.String("mode", "repo", "...")
+	flag.StringVar(&iterator_uri, "iterator-uri", "repo://", "...")
 
 	flag.Parse()
 
+	ctx := context.Background()
+	
 	g := globe.New()
 	g.DrawGraticule(10.0)
 	g.DrawCountryBoundaries()
@@ -33,61 +38,87 @@ func main() {
 
 	mu := new(sync.RWMutex)
 
-	cb := func(fh io.Reader, ctx context.Context, args ...interface{}) error {
+	iter_cb := func(ctx context.Context, path string, r io.ReadSeeker, args ...interface{}) error {
 
-		f, err := feature.LoadGeoJSONFeatureFromReader(fh)
+		body, err := io.ReadAll(r)
+
+		if err != nil {
+			return err
+		}
+		
+		f, err := geojson.UnmarshalFeature(body)
 
 		if err != nil {
 			return err
 		}
 
-		is_alt := whosonfirst.IsAlt(f)
-
-		if is_alt {
-			return nil
-		}
-
+		geom := f.Geometry
+		
 		mu.Lock()
 		defer mu.Unlock()
 
-		polys, err := f.Polygons()
+		switch geom.GeoJSONType() {
+		case "MultiPoint":
 
-		if err != nil {
-			return err
-		}
-
-		for _, poly := range polys {
-
-			ext := poly.ExteriorRing()
-			coords := ext.Vertices()
-
-			if len(coords) != 2 {
-				continue
-			}
-
-			min_x := coords[0].X
-			min_y := coords[0].Y
-			max_x := coords[1].X
-			max_y := coords[1].Y
+			/*
+			mp := geom.(orb.MultiPoint)
 
 			g.DrawLine(
-				min_y, min_x,
-				max_y, max_x,
+				mp[0][1], mp[0][0],
+				mp[1][1], mp[1][0],				
 				globe.Color(color.NRGBA{255, 0, 0, 255}),
 			)
-		}
+			*/
+			
+		case "LineString":
 
+			ls := geom.(orb.LineString)
+			count := len(ls)
+			
+			for i := 1; i < count; i++ {
+				
+				g.DrawLine(
+					ls[i-1][1], ls[i-1][0],
+					ls[i][1], ls[i][0],				
+					globe.Color(color.NRGBA{255, 0, 0, 255}),
+				)
+				
+			}
+			
+		case "MultiLineString":
+
+			mls := geom.(orb.MultiLineString)
+
+			for _, ls := range mls {
+				
+				count := len(ls)
+				
+				for i := 1; i < count; i++ {
+					
+					g.DrawLine(
+						ls[i-1][1], ls[i-1][0],
+						ls[i][1], ls[i][0],				
+						globe.Color(color.NRGBA{255, 0, 255, 0}),
+					)
+					
+				}
+			}
+			
+		default:
+			log.Println("UNSUPPORTED", geom.GeoJSONType())
+		}
+		
 		return nil
 	}
 
-	idx, err := index.NewIndexer(*mode, cb)
+	iter, err := iterator.NewIterator(ctx, iterator_uri, iter_cb)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	paths := flag.Args()
-	err = idx.IndexPaths(paths)
+	uris := flag.Args()
+	err = iter.IterateURIs(ctx, uris...)
 
 	if err != nil {
 		log.Fatal(err)
